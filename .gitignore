@@ -140,3 +140,11 @@ dmypy.json
 
 # meta data in macOS
 .DS_Store
+
+
+# Extras
+viewer_output/
+submodules/
+flame_model/assets/flame/
+submodules/simple-knn/build/
+submodules/simple-knn/simple_knn.egg-info/

@@ -112,6 +112,10 @@ class FlameGaussianModel(GaussianModel):
             return_verts_cano=True,
             static_offset=static_offset,
         )
+        print(verts.shape, verts_cano.shape)
+        print(verts[0, :10])
+        print(verts_cano[0, :10])
+        # verts[0, :2000] += 1
         self.update_mesh_properties(verts, verts_cano)
 
     def select_mesh_by_timestep(self, timestep, original=False):

@@ -539,11 +539,26 @@ class LocalViewer(Mini3DViewer):
                 dpg.add_separator()
 
                 def callback_set_pose(sender, app_data):
-                    joint, axis = sender.split('-')[1:3]
+                    # joint, axis = sender.split('-')[1:3]
+                    parts = sender.split('-')
+                    joint = parts[1]
+                    if joint == 'eyes' and len(parts) == 4:
+                        side = parts[2]
+                        axis = parts[3]
+                    else:
+                        side = None
+                        axis = parts[2]
+
                     axis_idx = {'x': 0, 'y': 1, 'z': 2}[axis]
-                    self.flame_param[joint][0, axis_idx] = app_data
-                    if joint == 'eyes':
-                        self.flame_param[joint][0, 3+axis_idx] = app_data
+                    # self.flame_param[joint][0, axis_idx] = app_data
+                    # if joint == 'eyes':
+                    #     self.flame_param[joint][0, 3+axis_idx] = app_data
+                    if joint == 'eyes' and side is not None:
+                        offset = 0 if side == 'l' else 3
+                        self.flame_param[joint][0, offset + axis_idx] = app_data
+                    else:
+                        self.flame_param[joint][0, axis_idx] = app_data
+
                     if not dpg.get_value("_checkbox_enable_control"):
                         dpg.set_value("_checkbox_enable_control", True)
                     self.gaussians.update_mesh_by_param_dict(self.flame_param)
@@ -553,14 +568,36 @@ class LocalViewer(Mini3DViewer):
                 max_rot = 0.5
                 for joint in ['neck', 'jaw', 'eyes']:
                     if joint in self.flame_param:
-                        with dpg.group(horizontal=True):
-                            dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 0], callback=callback_set_pose, tag=f"_slider-{joint}-x", width=70)
-                            dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 1], callback=callback_set_pose, tag=f"_slider-{joint}-y", width=70)
-                            dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 2], callback=callback_set_pose, tag=f"_slider-{joint}-z", width=70)
-                            self.pose_sliders.append(f"_slider-{joint}-x")
-                            self.pose_sliders.append(f"_slider-{joint}-y")
-                            self.pose_sliders.append(f"_slider-{joint}-z")
-                            dpg.add_text(f'{joint:4s}')
+                        # with dpg.group(horizontal=True):
+                        #     dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 0], callback=callback_set_pose, tag=f"_slider-{joint}-x", width=70)
+                        #     dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 1], callback=callback_set_pose, tag=f"_slider-{joint}-y", width=70)
+                        #     dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 2], callback=callback_set_pose, tag=f"_slider-{joint}-z", width=70)
+                        #     self.pose_sliders.append(f"_slider-{joint}-x")
+                        #     self.pose_sliders.append(f"_slider-{joint}-y")
+                        #     self.pose_sliders.append(f"_slider-{joint}-z")
+                        #     dpg.add_text(f'{joint:4s}')
+
+                        if joint == 'eyes':
+                            with dpg.group(horizontal=True):
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 0], callback=callback_set_pose, tag=f"_slider-{joint}-l-x", width=70)
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 1], callback=callback_set_pose, tag=f"_slider-{joint}-l-y", width=70)
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 2], callback=callback_set_pose, tag=f"_slider-{joint}-l-z", width=70)
+                                dpg.add_text('eyes_l')
+                                self.pose_sliders.extend([f"_slider-{joint}-l-x", f"_slider-{joint}-l-y", f"_slider-{joint}-l-z"])
+                            with dpg.group(horizontal=True):
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 3], callback=callback_set_pose, tag=f"_slider-{joint}-r-x", width=70)
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 4], callback=callback_set_pose, tag=f"_slider-{joint}-r-y", width=70)
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 5], callback=callback_set_pose, tag=f"_slider-{joint}-r-z", width=70)
+                                dpg.add_text('eyes_r')
+                                self.pose_sliders.extend([f"_slider-{joint}-r-x", f"_slider-{joint}-r-y", f"_slider-{joint}-r-z"])
+                        else:
+                            with dpg.group(horizontal=True):
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 0], callback=callback_set_pose, tag=f"_slider-{joint}-x", width=70)
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 1], callback=callback_set_pose, tag=f"_slider-{joint}-y", width=70)
+                                dpg.add_slider_float(min_value=-max_rot, max_value=max_rot, format="%.2f", default_value=self.flame_param[joint][0, 2], callback=callback_set_pose, tag=f"_slider-{joint}-z", width=70)
+                                self.pose_sliders.extend([f"_slider-{joint}-x", f"_slider-{joint}-y", f"_slider-{joint}-z"])
+                                dpg.add_text(f'{joint:4s}')
+                                
                 dpg.add_text('   roll       pitch      yaw')
                 
                 dpg.add_separator()
@@ -574,8 +611,11 @@ class LocalViewer(Mini3DViewer):
                     self.need_update = True
                 self.expr_sliders = []
                 dpg.add_text(f'Expressions')
-                for i in range(5):
-                    dpg.add_slider_float(label=f"{i}", min_value=-3, max_value=3, format="%.2f", default_value=0, callback=callback_set_expr, tag=f"_slider-expr-{i}", width=250)
+                for i in range(self.gaussians.n_expr):
+                    dpg.add_slider_float(label=f"{i}", min_value=-3, max_value=3,
+                                         format="%.2f", default_value=0,
+                                         callback=callback_set_expr,
+                                         tag=f"_slider-expr-{i}", width=250)
                     self.expr_sliders.append(f"_slider-expr-{i}")
 
                 def callback_reset_flame(sender, app_data):
